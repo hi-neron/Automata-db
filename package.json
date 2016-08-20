@@ -1,0 +1,32 @@
+{
+  "name": "automata-db",
+  "version": "1.0.0",
+  "description": "Db for automata project",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^3.4.1",
+    "rethinkdb": "^2.3.2"
+  },
+  "devDependencies": {
+    "ava": "^0.16.0",
+    "standard": "^8.0.0-beta.5"
+  },
+  "scripts": {
+    "test": "npm run lint && ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hi-neron/Automata-db.git"
+  },
+  "keywords": [
+    "database",
+    "automata",
+    "rethinkdb"
+  ],
+  "author": "Neron",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hi-neron/Automata-db/issues"
+  },
+  "homepage": "https://github.com/hi-neron/Automata-db#readme"
+}

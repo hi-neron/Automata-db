@@ -4,21 +4,25 @@
 Database: __rethinkdb__ / Test: __AVA__
 
 ### layer 4 / Database
-| Database        | Usuarios         | Imágenes         | Autentificacion | Grid           |
-|:---------------:|:----------------:|:----------------:|:---------------:|:--------------:|
-| Create          | Get              | GetPicture       | Auth            | CreateGrid     |
-| Connect         | Save             | GetAllPictures   |                 | GetGrid        |
-| Disconnect      | GetByMasteries   | SavePicture      |                 | ActualizeGrid  |
-|                 | CreateChallenge  | Delete           |                 |                |
-|                 | AddMasteries     | Getbytag         |                 |                |
-|                 | GetMasteries     | AddAward         |                 |                |
-|                 | AddPoint         | GetByUser        |                 |                |
-|                 | GetPoints        | ChangePos        |                 |                |
-|                 | AddMessage       | AddPos           |                 |                |
-|                 | GetMessages      |                  |                 |                |
-|                 | AddAlert         |                  |                 |                |
-|                 | GetAlerts        |                  |                 |                |
-|                 | GetComunications |                  |                 |                |
+| Database        | Usuarios         | Imágenes         | Autentificacion | Grid           | Challenges       |
+|:---------------:|:----------------:|:----------------:|:---------------:|:--------------:|:----------------:|
+| Create          | GetUser          | GetPicture       | Auth            | CreateGrid     | createChallenge  |
+| Connect         | CreateUser       | GetAllPictures   |                 | GetGrid        | addUserChallenge |
+| Disconnect      | GetByMasteries   | SavePicture      |                 | updateGrid     | getUserPoints    |
+|                 | AddMastery       | Delete           |                 | -NewChallenge- | getChallengeTime |
+|                 | AddSkill         | Getbytag         |                 |                |                  |
+|                 | -GetSkill-       | AddAward         |                 |                |                  |
+|                 | GetSkills        | GetByUser        |                 |                |                  |
+|                 | AddPoint         | AddPos           |                 |                |                  |
+|                 | GetPoints        | Move (x, y, r)   |                 |                |                  |
+|                 | AddMessage       |                  |                 |                |                  |
+|                 | GetMessages      |                  |                 |                |                  |
+|                 | AddAlert         |                  |                 |                |                  |
+|                 | GetAlerts        |                  |                 |                |                  |
+|                 | AddImage         |                  |                 |                |                  |
+|                 | AddAvatar        |                  |                 |                |                  |
+|                 | AddBadge         |                  |                 |                |                  |
+|                 | GetBadges        |                  |                 |                |                  |
 
 # LICENSE
 MIT License

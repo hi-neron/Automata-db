@@ -5,13 +5,18 @@
   "main": "index.js",
   "dependencies": {
     "bluebird": "^3.4.1",
-    "rethinkdb": "^2.3.2"
+    "co": "^4.6.0",
+    "crypto": "0.0.3",
+    "rethinkdb": "^2.3.2",
+    "uuid-base62": "^0.1.0"
   },
   "devDependencies": {
     "ava": "^0.16.0",
+    "babel-eslint": "^6.1.2",
     "standard": "^8.0.0-beta.5"
   },
   "scripts": {
+    "lint": "standard",
     "test": "npm run lint && ava"
   },
   "repository": {
@@ -23,6 +28,9 @@
     "automata",
     "rethinkdb"
   ],
+  "standard": {
+    "parser": "babel-eslint"
+  },
   "author": "Neron",
   "license": "MIT",
   "bugs": {

@@ -22,6 +22,20 @@ module.exports = {
       users.push(this.getUser())
     }
     return users
+  },
+  getMessage () {
+    return {
+      from: `user_${uuid.v4()}`,
+      message: 'This a new message',
+      subject: 'whatever subject'
+    }
+  },
+  getAlert () {
+    return {
+      type: '',
+      message: '',
+      from: ''
+    }
   }
 }
 

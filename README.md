@@ -4,25 +4,25 @@
 Database: __rethinkdb__ / Test: __AVA__
 
 ### layer 4 / Database
-| Database        | Usuarios         | Imágenes         | Autentificacion | Grid           | Challenges       |
-|:---------------:|:----------------:|:----------------:|:---------------:|:--------------:|:----------------:|
-| Create          | GetUser          | GetPicture       | Auth            | CreateGrid     | createChallenge  |
-| Connect         | CreateUser       | GetAllPictures   |                 | GetGrid        | addUserChallenge |
-| Disconnect      | GetByMasteries   | SavePicture      |                 | updateGrid     | getUserPoints    |
-|                 | AddMastery       | Delete           |                 | -NewChallenge- | getChallengeTime |
-|                 | AddSkill         | Getbytag         |                 |                |                  |
-|                 | -GetSkill-       | AddAward         |                 |                |                  |
-|                 | GetSkills        | GetByUser        |                 |                |                  |
-|                 | AddPoint         | AddPos           |                 |                |                  |
-|                 | GetPoints        | Move (x, y, r)   |                 |                |                  |
-|                 | AddMessage       |                  |                 |                |                  |
-|                 | GetMessages      |                  |                 |                |                  |
-|                 | AddAlert         |                  |                 |                |                  |
-|                 | GetAlerts        |                  |                 |                |                  |
-|                 | AddImage         |                  |                 |                |                  |
-|                 | AddAvatar        |                  |                 |                |                  |
-|                 | AddBadge         |                  |                 |                |                  |
-|                 | GetBadges        |                  |                 |                |                  |
+| Database        | Usuarios           | Imágenes         | Autentificacion | Grid           | Challenges       |
+|:---------------:|:------------------:|:----------------:|:---------------:|:--------------:|:----------------:|
+| **Create     ** | GetUser            | GetPicture       | Auth            | CreateGrid     | createChallenge  |
+| **Connect    ** | CreateUser         | GetAllPictures   |                 | GetGrid        | addUserChallenge |
+| **Disconnect ** | GetUserByMasteries | SavePicture      |                 | updateGrid     | getUserPoints    |
+|                 | editMastery        | Delete           |                 | -NewChallenge- | getChallengeTime |
+|                 | AddSkill           | Getbytag         |                 |                |                  |
+|                 | -GetSkill-         | AddAward         |                 |                |                  |
+|                 | GetSkills          | GetByUser        |                 |                |                  |
+|                 | AddPoint           | AddPos           |                 |                |                  |
+|                 | GetPoints          | Move (x, y, r)   |                 |                |                  |
+|                 | AddMessage         |                  |                 |                |                  |
+|                 | GetMessages        |                  |                 |                |                  |
+|                 | AddAlert           |                  |                 |                |                  |
+|                 | GetAlerts          |                  |                 |                |                  |
+|                 | GetBadges          |                  |                 |                |                  |
+|                 | AddAvatar          |                  |                 |                |                  |
+|                 | AddBadge           |                  |                 |                |                  |
+|                 |                    |                  |                 |                |                  |
 
 # LICENSE
 MIT License

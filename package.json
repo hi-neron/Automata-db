@@ -7,17 +7,19 @@
     "bluebird": "^3.4.1",
     "co": "^4.6.0",
     "crypto": "0.0.3",
+    "lodash": "^4.15.0",
     "rethinkdb": "^2.3.2",
     "uuid-base62": "^0.1.0"
   },
   "devDependencies": {
     "ava": "^0.16.0",
     "babel-eslint": "^6.1.2",
-    "standard": "^8.0.0-beta.5"
+    "standard": "^8.0.0-beta.5",
+    "tap-nyan": "0.0.2"
   },
   "scripts": {
     "lint": "standard",
-    "test": "npm run lint && ava"
+    "test": "npm run lint && ava --verbose"
   },
   "repository": {
     "type": "git",

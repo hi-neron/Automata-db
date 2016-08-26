@@ -13,8 +13,8 @@ Database: __rethinkdb__ / Test: __AVA__
 |                 | AddSkill           | Getbytag         |                 |                |                  |
 |                 | -GetSkill-         | AddAward         |                 |                |                  |
 |                 | GetSkills          | GetByUser        |                 |                |                  |
-|                 | AddPoint           | AddPos           |                 |                |                  |
-|                 | GetPoints          | Move (x, y, r)   |                 |                |                  |
+|                 | AddPoint           |                  |                 |                |                  |
+|                 | GetPoints          |                  |                 |                |                  |
 |                 | AddMessage         |                  |                 |                |                  |
 |                 | GetMessages        |                  |                 |                |                  |
 |                 | AddAlert           |                  |                 |                |                  |

@@ -13,7 +13,7 @@ test.beforeEach('Setup database each test', async t => {
   t.context.db = db
   t.context.dbName = dbName
   await db.connect()
-  t.true(db.connected, 'Debe estar coenectado')
+  t.true(db.connected, 'Debe estar conectado')
 })
 
 test.afterEach.always('Clean up', async t => {
@@ -132,25 +132,22 @@ test('AddMessage', async t => {
 
   let dude = 'pepe'
   let data = fixtures.getMessage()
-  let fakeData = delete data.from
+  let fakeData = data
+  data.from = emisor.username
 
   await db.createUser(emisor)
   await db.createUser(user)
 
-  data.from = emisor.username
-
   let result = await db.addMessage(user.username, data)
 
-  console.log(result.messages)
-  console.log('-------------')
-  console.log(result)
-
+  t.truthy(result.messages[0].id)
   t.truthy(result.messages[0].date)
   t.deepEqual(result.messages[0].message, data.message)
   t.deepEqual(result.messages[0].from.name, emisor.name)
 
   t.throws(db.addMessage(dude, data), /not found/)
-  t.throws(db.addMessage(user.username, fakeData), /invalid/, 'invalid message')
+  delete fakeData.from
+  t.throws(db.addMessage(user.username, fakeData), /invalid/)
 })
 
 test('AddAlert', async t => {
@@ -158,54 +155,118 @@ test('AddAlert', async t => {
   t.is(typeof db.addAlert, 'function', 'Should have an addAlert function')
 
   let user = fixtures.getUser()
+  let user2 = fixtures.getUser()
   let alert = fixtures.getAlert()
-  let fakeAlert = delete alert.type
-  console.log(fakeAlert)
+  let alert2 = fixtures.getAlert()
+  alert2.from = user2.username
   let dude = 'pepe'
 
   await db.createUser(user)
-  let result = await db.addAlert(user.username, alert)
+  await db.createUser(user2)
 
+  let result = await db.addAlert(user.username, alert)
+  let fakeAlert = alert
+  delete fakeAlert.type
+
+  t.truthy(result.alerts[0].id)
   t.truthy(result.alerts[0].date)
   t.truthy(result.alerts[0].type)
-  t.deepEqual(result.alerts[0].message, alert.message)
   t.deepEqual(result.alerts[0].from, alert.from)
+  t.deepEqual(result.alerts[0].message, alert.message)
 
-  t.throws(db.addAlert(dude, alert), /not found/, 'user not found')
-  t.throws(db.addAlert(dude, fakeAlert), /invalid/, 'invalid alert')
+  let result2 = await db.addAlert(user.username, alert2)
+
+  t.deepEqual(result2.alerts[0].message, alert2.message)
+
+  t.throws(db.addAlert(dude, alert), /not found/)
+  t.throws(db.addAlert(user.username, fakeAlert), /invalid/)
 })
 
-test.skip('GetCommunications', async t => {
+test('GetCommunications', async t => {
   let db = t.context.db
   t.is(typeof db.getCommunications, 'function', 'Should have an getCommunications function')
 
   let user = fixtures.getUser()
+  let user2 = fixtures.getUser()
+  let alert = fixtures.getAlert()
+  let message = fixtures.getMessage()
+  let message2 = fixtures.getMessage()
+
+  let dude = 'foo user'
+
+  message.from = user2.username
+  message2.from = user2.username
+
+  await db.createUser(user2)
   await db.createUser(user)
+
+  await db.addMessage(user.username, message)
+  await db.addMessage(user.username, message2)
+  await db.addAlert(user.username, alert)
+
   let result = await db.getCommunications(user.username)
 
   t.is(typeof result, 'object')
-  t.deepEqual(result, 'object')
+  t.is(result.communications.length, 3)
+
+  t.throws(db.getCommunications(dude), /not found/)
 })
 
-// test.todo('GetMessages')
-// test.todo('GetAlerts')
+test('AddBadge', async t => {
+  let db = t.context.db
+  t.is(typeof db.addBadge, 'function', 'addBadge to user function')
 
-// tess.todo('AddBadge')
-// tess.todo('GetBadge')
-// test.todo('AddPoint')
-// test.todo('GetPoints')
+  let badge = 'artista'
+  let dude = 'pepe'
 
-// test.todo('AddSkill')
-// test.todo('GetSkills')
+  let user = fixtures.getUser()
+  await db.createUser(user)
 
-// // images
-// test.todo('savePicture')
-// test.todo('GetPicture')
-// test.todo('GetAllPictures')
-// test.todo('deletePicture')
-// test.todo('getByTag')
-// test.todo('addAward')
-// test.todo('getByUser')
+  let userBadge = await db.addBadge(user.username, badge)
+
+  t.truthy(userBadge.badges[0].date)
+  t.deepEqual(userBadge.badges[0].name, badge, 'user must be have an avatar')
+
+  t.throws(db.addBadge(user.username), /invalid/)
+  t.throws(db.addBadge(user.username, 'no existo'), /invalid/)
+  t.throws(db.addBadge(dude, badge), /not found/)
+})
+
+test('addSkill', async t => {
+  let db = t.context.db
+  t.is(typeof db.addSkill, 'function', 'addSkill to user function')
+
+  let skill = 'crab'
+  let dude = 'pepe'
+
+  let user = fixtures.getUser()
+  await db.createUser(user)
+
+  let userSkills = await db.addSkill(user.username, skill)
+
+  t.deepEqual(userSkills.skills[0], skill, 'user must be have an avatar')
+
+  t.throws(db.addSkill(user.username), /invalid/)
+  t.throws(db.addSkill(user.username, 'no existo'), /invalid/)
+  t.throws(db.addSkill(dude, skill), /not found/)
+})
+
+test('addPoints', async t => {
+  let db = t.context.db
+  t.is(typeof db.addPoints, 'function', 'addPoints to user function')
+
+  let dude = 'pepe'
+
+  let user = fixtures.getUser()
+  await db.createUser(user)
+
+  await db.addPoints(user.username, 3)
+  let userPoints = await db.addPoints(user.username, 5)
+
+  t.truthy(userPoints.points)
+  t.deepEqual(userPoints.points, 8)
+  t.throws(db.addPoints(dude), /not found/)
+})
 
 // // images - movement
 // test.todo('AddPos')

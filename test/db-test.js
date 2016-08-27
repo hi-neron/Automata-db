@@ -9,7 +9,7 @@ const utils = require('../lib/utils')
 
 test.beforeEach('Setup database each test', async t => {
   const dbName = `automata_${uuid.v4()}`
-  const db = new Db({ db: dbName })
+  const db = new Db({ db: dbName, setup: true })
   t.context.db = db
   t.context.dbName = dbName
   await db.connect()
@@ -271,16 +271,3 @@ test('addPoints', async t => {
 // // images - movement
 // test.todo('AddPos')
 // test.todo('ChangePos')
-
-// // Auth
-// test.todo('auth')
-
-// // Grid
-// test.todo('createGrid')
-// test.todo('getGrid')
-// test.todo('UpdateGrid')
-
-// // Challenges
-// test.todo('getChallenge')
-// test.todo('createChallenge')
-// test.todo('addUserChallenge')

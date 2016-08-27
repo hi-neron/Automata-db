@@ -9,7 +9,7 @@ const fixtures = require('./fixtures')
 
 test.beforeEach('Setup database each test', async t => {
   const dbName = `automata_${uuid.v4()}`
-  const db = new Db({ db: dbName })
+  const db = new Db({ db: dbName, setup: true })
   t.context.db = db
   t.context.dbName = dbName
   await db.connect()
@@ -153,17 +153,32 @@ test('add picture award', async t => {
   t.throws(db.addPictureAward(publicKey, 'fak3Award'), /invalid/)
 })
 
-test.skip('get Picture By User', async t => {
+test('get Picture By User', async t => {
   let db = t.context.db
-  t.is(typeof db.getPictureByUser, 'function', 'Should be')
+  t.is(typeof db.getPicturesByUser, 'function', 'Should be')
+
+  let users = fixtures.getUsers(10)
+  let images = fixtures.getImages(10)
+  let usersList = []
+  let imageList = []
+
+  for (let i = 0; i < users.length; i++) {
+    usersList.push(db.createUser(users[i]))
+  }
+
+  let usersDb = await Promise.all(usersList)
+
+  for (let i = 0; i < images.length; i++) {
+    images[i].userId = usersDb[i].publicId
+    imageList.push(db.createPicture(images[i]))
+  }
+
+  let username = usersDb[4].username
+
+  await Promise.all(imageList)
+
+  let imagesDb = await db.getPicturesByUser(username)
+  t.is(imagesDb[0].userId, usersDb[4].publicId)
+
+  t.throws(db.getPicturesByUser('foo'), /not found/)
 })
-
-// Grid
-// test.todo('createGrid')
-// test.todo('getGrid')
-// test.todo('UpdateGrid')
-
-// Challenges
-// test.todo('getChallenge')
-// test.todo('createChallenge')
-// test.todo('addUserChallenge')

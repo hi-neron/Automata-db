@@ -2,6 +2,8 @@
 logs
 *.log
 npm-debug.log*
+
+#design files
 *.ai
 
 # Runtime data

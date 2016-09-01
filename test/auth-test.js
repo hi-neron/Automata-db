@@ -32,11 +32,14 @@ test('authenticate', async t => {
   t.is(typeof db.authenticate, 'function', 'should be')
 
   let user = fixtures.getUser()
+  let plainPassword = user.password
+  let plainUserName = user.username
+
   await db.createUser(user)
 
-  let authenticate = await db.authenticate(user.username, user.password)
+  let authenticate = await db.authenticate(plainUserName, plainPassword)
   t.truthy(authenticate)
 
-  let authenticate2 = await db.authenticate(user.username, 'f4lsyP4ss')
+  let authenticate2 = await db.authenticate(plainUserName, 'f4lsyP4ss')
   t.falsy(authenticate2)
 })

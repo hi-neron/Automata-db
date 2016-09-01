@@ -48,7 +48,7 @@ test('create picture', async t => {
   t.throws(db.createPicture(fakeImageWUser), /not found/)
 
   let fakeImage = image
-  delete fakeImage.url
+  delete fakeImage.src
   t.throws(db.createPicture(fakeImage), /invalid/)
 })
 
@@ -133,24 +133,50 @@ test('add picture award', async t => {
   t.is(typeof db.addPictureAward, 'function', 'Should be')
 
   let user = fixtures.getUser()
+  let userSponsor = fixtures.getUser()
+  let userSponsor2 = fixtures.getUser()
   let image = fixtures.getImage()
+
+  let sponsorName = userSponsor.username
+  let sponsorName2 = userSponsor2.username
+
   let userDb = await db.createUser(user)
+  await db.createUser(userSponsor)
+  await db.createUser(userSponsor2)
+
   image.userId = userDb.publicId
+
   let imageDb = await db.createPicture(image)
+
   let publicKey = imageDb.publicId
 
-  await db.addPictureAward(publicKey, 'amazing')
-  await db.addPictureAward(publicKey, 'takeMyMoney')
-  await db.addPictureAward(publicKey, 'bastard')
+  let award = {
+    sponsor: sponsorName,
+    type: 'amazing'
+  }
+
+  let award2 = {
+    sponsor: sponsorName2,
+    type: 'amazing'
+  }
+
+  await db.addPictureAward(publicKey, award)
 
   let imageAcquired = await db.getPicture(publicKey)
-
   t.is(imageAcquired.awards.amazing, 1)
-  t.is(imageAcquired.awards.takeMyMoney, 1)
-  t.is(imageAcquired.awards.bastard, 1)
+  t.is(imageAcquired.sponsors[0], userSponsor.username)
 
-  t.throws(db.addPictureAward('failT3stKey', 'amazing'), /not found/)
-  t.throws(db.addPictureAward(publicKey, 'fak3Award'), /invalid/)
+  await db.addPictureAward(publicKey, award2)
+  let imageAcquired2 = await db.getPicture(publicKey)
+  t.is(imageAcquired2.awards.amazing, 2)
+  t.is(imageAcquired2.sponsors[1], userSponsor2.username)
+
+  t.throws(db.addPictureAward(publicKey, award), /already/)
+
+  t.throws(db.addPictureAward('failT3stKey', award), /not found/)
+
+  award.type = 'fake'
+  t.throws(db.addPictureAward(publicKey, award), /invalid/)
 })
 
 test('get Picture By User', async t => {

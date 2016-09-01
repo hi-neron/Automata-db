@@ -27,6 +27,7 @@ test.afterEach.always('Clean up', async t => {
   await r.dbDrop(dbName).run(conn)
 })
 
-test.todo('createGrid')
+test.skip('createGrid', async t => {
+})
 // test.todo('getGrid')
 // test.todo('UpdateGrid')

@@ -5,7 +5,7 @@ module.exports = {
   getImage () {
     return {
       description: 'a random description',
-      url: `https://image.com/${uuid.v4()}.jpg`,
+      src: `https://image.com/${uuid.v4()}.jpg`,
       userId: ''
     }
   },

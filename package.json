@@ -19,7 +19,7 @@
   },
   "scripts": {
     "lint": "standard",
-    "test": "npm run lint && ava --verbose"
+    "test": "npm run lint && ava test/**-test.js"
   },
   "repository": {
     "type": "git",

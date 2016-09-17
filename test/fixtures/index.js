@@ -6,7 +6,7 @@ module.exports = {
     return {
       description: 'a random description',
       src: `https://image.com/${uuid.v4()}.jpg`,
-      userId: ''
+      userId: `username_${uuid.v4()}`
     }
   },
   getImages (n) {
@@ -44,6 +44,22 @@ module.exports = {
       from: 'system',
       type: 'You sucks',
       message: 'some message'
+    }
+  },
+  getGrid () {
+    let grid = []
+
+    for (let x = 0; x < 3; x++) {
+      grid.push([])
+      for (let y = 0; y < 3; y++) {
+        grid[x].push({
+          image: this.getImage()
+        })
+      }
+    }
+
+    return {
+      grid: grid
     }
   }
 }

@@ -11,7 +11,7 @@ Database: __rethinkdb__ / Test: __AVA__
 | **Disconnect ** | GetUserByMasteries | SavePicture      |                 | updateGrid     | getUserPoints    | modify          |                |
 |                 | AddSkill           | Getbytag         |                 |                |                  | DevRate         |                |
 |                 | editMastery        | Delete           |                 | -NewChallenge- | getChallengeTime | Block           |                |
-|                 | -GetSkill-         | AddAward         |                 |                |                  | Rate            |                |
+|                 | -GetSkill-         | AddAward         |                 |                |                  | ComunityRate    |                |
 |                 | GetSkills          | GetByUser        |                 |                |                  | EvaluateMode    |                |
 |                 | AddPoint           |                  |                 |                |                  |                 |                |
 |                 | GetPoints          |                  |                 |                |                  |                 |                |

@@ -1,5 +1,6 @@
 'use strict'
 const uuid = require('uuid-base62')
+const lorem = require('lorem-ipsum')
 
 module.exports = {
   getImage () {
@@ -44,6 +45,40 @@ module.exports = {
       from: 'system',
       type: 'You sucks',
       message: 'some message'
+    }
+  },
+  getContrib () {
+    return {
+      id: uuid.uuid(),
+      'title': 'Esto es un titulo',
+      user: {
+        userId: uuid.uuid(),
+        userName: `user_${uuid.v4()}`,
+        userTitle: `user_${uuid.v4()}`,
+        userAvatar: `http://user_${uuid.v4()}.png`
+      },
+      tags: [],
+      data: {
+        type: 'feature',
+        data: 'esto podria ser una gran ideacon varios tags en camino #hagamos el #Amor',
+        image: 'http://aquiUnaMuestra.jpg'
+      },
+      messages: [],
+      comunityRate: 10,
+      devResponse: 'esta es la resuesta del developer',
+      devApproval: false
+    }
+  },
+  getContribMessage () {
+    return {
+      userName: `user_${uuid.v4()}`,
+      userId: uuid.uuid(),
+      message: lorem({
+        count: 1,
+        units: 'sentences'
+      }),
+      image: 'http://estoEsUnaImge.jpg',
+      rate: 3
     }
   },
   getGrid () {

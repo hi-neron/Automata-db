@@ -49,18 +49,11 @@ module.exports = {
   },
   getContrib () {
     return {
-      id: uuid.uuid(),
-      'title': 'Esto es un titulo',
-      user: {
-        userId: uuid.uuid(),
-        userName: `user_${uuid.v4()}`,
-        userTitle: `user_${uuid.v4()}`,
-        userAvatar: `http://user_${uuid.v4()}.png`
-      },
+      title: 'Esto es un titulo',
       tags: [],
       data: {
         type: 'feature',
-        data: 'esto podria ser una gran ideacon varios tags en camino #hagamos el #Amor',
+        info: 'esto podria ser una gran ideacon varios tags en camino #hagamos el #Amor',
         image: 'http://aquiUnaMuestra.jpg'
       },
       messages: [],

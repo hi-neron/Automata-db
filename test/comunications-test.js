@@ -27,15 +27,6 @@ test.afterEach.always('Clean up', async t => {
   await r.dbDrop(dbName).run(conn)
 })
 
-test('Get masteries list', async t => {
-  let db = t.context.db
-  t.is(typeof db.addMessage, 'function', 'Should have an addMessage function')
-  // start test to get masteries list
-  let masteries = utils.getMasteries()
-  console.log(masteries)
-  t.is(masteries.length, 6, 'lenght should be six')
-})
-
 test('Get the three masteries user list', async t => {
   let db = t.context.db
   t.is(typeof db.addMessage, 'function', 'Should have an addMessage function')
@@ -45,27 +36,30 @@ test('edit masteries', async t => {
   let db = t.context.db
   t.is(typeof db.editMasteries, 'function', 'editMastery should be')
 
-  let masteries = utils.getMasteries()
-  let mastery = ['Photography', 'Brand']
+  let mastery = ['Photography', 'Drawing']
 
   let gettingUser = fixtures.getUser()
   let user = await db.createUser(gettingUser)
   let result = await db.editMasteries(gettingUser.username, mastery)
 
   console.log(result)
-  t.is(user.masteries, masteries, 'should be official masteries')
+// t.is(user.masteries, masteries, 'should be official masteries')
   t.is(result.username, user.username, 'should be the same username')
   t.deepEqual(result.masteries.map(utils.capitalize), mastery, 'should have a masteries')
 
   let dude = 'pepe'
   t.throws(db.editMasteries(dude, mastery), /not found/)
 
-  let masteries2 = ['nana', 'nada', 'otroa', 'third']
+  let masteries2 = ['drawing', 'Photography', 'writing', 'motion']
   let resultTwo = await db.editMasteries(gettingUser.username, masteries2)
 
   console.log
   t.is(resultTwo.username, user.username, 'should be the same username')
   t.deepEqual(resultTwo.masteries.length, 3, 'should have three items')
+
+  masteries2 = ['nada', 'enAbsoluto']
+  let resultthree = await t.throws(db.editMasteries(gettingUser.username, masteries2))
+  t.is(resultthree.message, 'Mastery not found')
 })
 
 test('change personal title with badge', t => {

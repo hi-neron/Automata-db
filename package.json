@@ -15,6 +15,8 @@
   "devDependencies": {
     "ava": "^0.16.0",
     "babel-eslint": "^6.1.2",
+    "isarray": "^2.0.1",
+    "object-assign": "^4.1.1",
     "standard": "^8.0.0-beta.5",
     "tap-nyan": "0.0.2"
   },

@@ -19,7 +19,6 @@ test.beforeEach('Setup database each test', async t => {
 test.afterEach.always('Clean up', async t => {
   let db = t.context.db
   let dbName = t.context.dbName
-  t.is(typeof db.editMasteries, 'function', 'editMastery should be')
 
   await db.disconnect()
   t.false(db.connected, 'Debe desconectase')
@@ -28,8 +27,24 @@ test.afterEach.always('Clean up', async t => {
   await r.dbDrop(dbName).run(conn)
 })
 
+test('get tags from message', t => {
+  t.is(typeof utils.getTags, 'function', 'editMastery should be')
+  let contrib = fixtures.getContrib()
+  let tags = utils.getTags(contrib.data.info)
+  t.deepEqual(tags, ['#hagamos', '#amor'])
+
+  let errorinfo = '#this #is #a #bad #message #with #so #much #tags'
+  let errorinfo2 = '#thisIsABadMessageWithSoMuchTags'
+
+  let badTags = utils.getTags(errorinfo)
+  let badTagsTwo = utils.getTags(errorinfo2)
+
+  t.is(badTags.length, 5, 'max 5 tags')
+  t.is(badTagsTwo.length, 0, 'null tags')
+})
+
 // contribs functions
-test.skip('create a contribution', async t => {
+test('create a contribution', async t => {
   let db = t.context.db
   t.is(typeof db.createContrib, 'function', 'createContrib should be')
   /*
@@ -67,53 +82,54 @@ test.skip('create a contribution', async t => {
 
   // basics
   t.is(result.title, contrib.title, 'Should be same title')
-  t.truthy(result.id, 'it should have an id')
-  t.truthy(result.dateAdded, 'It should have a date')
+  t.is(typeof result.id, 'string', 'it should have an id')
+  t.true(result.dateAdded instanceof Date, 'It should have a date')
   t.is(typeof result.user, 'object', 'Should be an object')
 
   // medir los datos del usuario
   t.is(result.user.publicId, createdUser.publicId, 'debe tener un id')
-  t.is(result.user.userName, createdUser.username, 'debe tener un id')
+  t.is(result.user.username, createdUser.username, 'debe tener un id')
   t.is(result.user.title, createdUser.title, 'debe tener un id')
   t.is(result.user.avatar, createdUser.avatar, 'debe tener un id')
 
   // encontrar los tags
-  t.is(result.tags, ['#hagamos', '#amor'], 'deber tener las tags en el mensaje')
+  t.deepEqual(result.tags, ['#hagamos', '#amor'], 'deber tener las tags en el mensaje')
 
   // definir el tipo, el mensaje y la imagen (si la tiene)
-  t.truthy(result.data, 'debe tener un objeto data')
-  t.truthy(result.messages, 'debe tener un array de mensajes')
-  t.truthy(result.comunityRate, 'debe tener un array de mensajes')
-  t.truthy(result.devResponse, 'debe tener un array de mensajes')
+  t.is(typeof result.data, 'object', 'debe tener un objeto data')
+  t.true(result.messages instanceof Array, 'debe tener un array de mensajes')
+  t.is(typeof result.comunityRate, 'number', 'debe tener un array de mensajes')
+  t.is(typeof result.dev, 'object', 'debe tener un array de mensajes')
+  t.is(typeof result.dev, 'object', 'debe existir info del dev')
+  t.is(result.dev.message, null, 'debe existir mensaje del dev')
+  t.is(result.dev.approval, null, 'debe existir aprovacion del dev')
 
   let contrib2 = contrib
   delete contrib2['title']
   let resultTwo = await t.throws(db.createContrib(contrib2, username))
-  t.is(resultTwo.message, 'Invalid contribution title')
-
-  let contrib3 = contrib
-  delete contrib3['data']
-  let resultThree = await t.throws(db.createContrib(contrib3, username))
-  t.is(resultThree.message, 'Invalid contribution data')
+  t.deepEqual(resultTwo.message, 'Invalid contribution')
 })
 
-test('get tags from message', t => {
-  t.is(typeof utils.getTags, 'function', 'editMastery should be')
+test('delete a contribution', async t => {
+  let db = t.context.db
+  t.is(typeof db.deleteContrib, 'function', 'createContrib should be')
+
+  // debe crearse un usuario para evaluar
+  let user = fixtures.getUser()
+  let createdUser = await db.createUser()
+  let username = createdUser.username
+
+  // debe crearse un contribucion
   let contrib = fixtures.getContrib()
-  let tags = utils.getTags(contrib.data.info)
-  t.deepEqual(tags, ['#hagamos', '#amor'])
+  let createdContrib = await db.createContrib(contrib, username)
 
-  let errorinfo = '#this #is #a #bad #message #with #so #much #tags'
-  let errorinfo2 = '#thisIsABadMessageWithSoMuchTags'
-
-  let badTags = utils.getTags(errorinfo)
-  let badTagsTwo = utils.getTags(errorinfo2)
-
-  t.is(badTags.length, 5, 'max 5 tags')
-  t.is(badTagsTwo.length, 0, 'null tags')
+  // Debe reconocer si el usuario es dueño de la contribución
+  // debe intentar eliminar una contribucion -
+  // enviando la informacion con el id de la contribución y el usuario
+  // debe leer si no esta en evaluacion o aprobado por el dev, en ese caso puede eliminarse
+  // Si se puede, debe devolver el mensaje de eliminado con exito, con el id, y el titulo
 })
 
-test.todo('delete a contribution')
 test.todo('modify a contribution')
 test.todo('rate contribution')
 test.todo('active a evaluate mode for a contribution')

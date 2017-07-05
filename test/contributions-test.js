@@ -184,7 +184,7 @@ test('delete a contribution', async t => {
   t.is(impossibleDeleteResponse.message, 'dev has aproved this, you can\'t delete it', 'los features aprovados no se pueden borrar')
 })
 
-// dev methids
+// dev methods
 test.todo('create dev user')
 test.skip('add dev response', async t => {
   let db = t.context.db

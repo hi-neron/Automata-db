@@ -69,6 +69,15 @@ module.exports = {
       rate: 3
     }
   },
+  getDevData (approved) {
+    return {
+      message: lorem({
+        count: 1,
+        units: 'sentences'
+      }),
+      approved: approved
+    }
+  },
   getGrid () {
     let grid = []
 
@@ -80,7 +89,6 @@ module.exports = {
         })
       }
     }
-
     return {
       grid: grid
     }

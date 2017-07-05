@@ -184,7 +184,9 @@ test('delete a contribution', async t => {
   t.is(impossibleDeleteResponse.message, 'dev has aproved this, you can\'t delete it', 'los features aprovados no se pueden borrar')
 })
 
-test('add dev response', async t => {
+// dev methids
+test.todo('create dev user')
+test.skip('add dev response', async t => {
   let db = t.context.db
   t.is(typeof db.devRes, 'function', 'devResponse should exist')
   // se debe crear un usario
@@ -193,13 +195,12 @@ test('add dev response', async t => {
   // se debe valorar la contribucion por el dev
   // se debe evitar que un user normal modifique el devResponse
 })
+test.todo('active a evaluate mode for a contribution')
 
-test.todo('create dev user')
+// contributions edit methods
 test.todo('modify a contribution')
 test.todo('rate contribution')
-test.todo('active a evaluate mode for a contribution')
 test.todo('add a message to a contribution')
 
 // utils
-test.todo('get a contribution')
 test.todo('get last ten contributions')

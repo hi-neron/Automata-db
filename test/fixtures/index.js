@@ -75,7 +75,7 @@ module.exports = {
         count: 1,
         units: 'sentences'
       }),
-      approved: approved
+      approval: approved
     }
   },
   getGrid () {

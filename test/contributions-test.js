@@ -122,7 +122,6 @@ test('create a contribution', async t => {
   // definir el tipo, el mensaje y la imagen (si la tiene)
   t.is(typeof result.data, 'object', 'debe tener un objeto data')
   t.true(result.messages instanceof Array, 'debe tener un array de mensajes')
-  t.is(typeof result.comunityRate, 'number', 'debe tener un array de mensajes')
   t.is(typeof result.dev, 'object', 'debe tener un array de mensajes')
   t.is(typeof result.dev, 'object', 'debe existir info del dev')
   t.is(result.dev.message, null, 'debe existir mensaje del dev')
@@ -167,25 +166,52 @@ test('delete a contribution', async t => {
   username = createdSecondUser.username
 
   let badDeleteResponse = await t.throws(db.deleteContrib(contribId, username))
-  t.is(badDeleteResponse.message, 'internal error', 'devuleve un error si no coincide user con contribución')
+  t.regex(badDeleteResponse.message, /are not authorized/, 'devuleve un error si no coincide user con contribución')
 
   // debe leer si no esta en evaluacion o aprobado por el dev, en ese caso puede eliminarse
   let contrib3 = fixtures.getContrib()
+
   // se crea la contribucion
   createdContrib = await db.createContrib(contrib3, username)
   contribId = createdContrib.publicId
 
-  user.dev = true
-  let devData = fixtures.getDevData()
-  let response = await db.devRes(contribId, user, devData)
+  // se debe crear un user dev para dar aprovacion
+  let userDev = fixtures.getUser()
+  userDev.username = 'pepe'
+  let devCreated = await db.createUser(userDev)
 
-  console.log(response)
-  let impossibleDeleteResponse = await t.throws(db.deleteContrib(contribId, username))
-  t.is(impossibleDeleteResponse.message, 'dev has aproved this, you can\'t delete it', 'los features aprovados no se pueden borrar')
+  // se debe crear una respuesta positiva del dev
+  let devRes = fixtures.getDevData(true)
+
+  // user dev debe aprovar la contribucion
+  await db.devRes(contribId, devCreated, devRes)
+
+  // debe devolver un error si fue aprovado por el dev
+  let delResponseErr = await t.throws(db.deleteContrib(contribId, username))
+  t.regex(delResponseErr.message, /aprovated can't be deleted/, 'Contributions aproved can\'t be deleted')
 })
 
 // dev methods
-test.todo('create dev user')
+test('create dev user', async t => {
+  let db = t.context.db
+  t.is(typeof db.deleteContrib, 'function', 'createContrib should be')
+
+  // debe crearse un usuario para evaluar, el usuario debe ser el admin
+  let user = fixtures.getUser()
+  user.username = 'pepe'
+  let createdUser = await db.createUser(user)
+
+  // let username = createdUser.username
+  t.is(createdUser.admin, true, 'must be administrator')
+
+  // se asegura de que ningun otro usuario sea dev
+  let userNoAdmin = fixtures.getUser()
+  user.username = 'michael'
+  let createdUserNoA = await db.createUser(userNoAdmin)
+
+  // let username = createdUser.username
+  t.is(createdUserNoA.admin, false, 'must be administrator')
+})
 
 test('add dev response', async t => {
   let db = t.context.db
@@ -193,16 +219,21 @@ test('add dev response', async t => {
 
   // se debe crear un usario
   let newUser = fixtures.getUser()
+
+  // se debe darle el titulo de developer.
+
+  // la forma como se gestiona al usuario *dev* es:
+  // solo se puede asignar a un usuario el rol de dev desde la creacion del usuario, nunca despues
+  // Se busca en una variable de entorno, que contiene los nombres de los nuevos devs
+  // si el nombre coincide con el nuevo usuario, este tendra ese rol.
+
+  // en este caso pepe, esta en la lista de devs users
+  newUser.username = 'pepe'
   let createdUser = await db.createUser(newUser)
   let userName = createdUser.username
 
-  // se debe darle el titulo de developer
-  // tener en cuenta la forma como se va a gestionar la seguridad
-  // del dev user
-
-  let createNewDev = await db.devCreate(createdUser)
-  t.is(createNewDev.status, 200, 'ok:ok')
-  t.is(createNewDev.user.publicId, createdUser.publicId, 'shoud be the same publicid')
+  // Se asegura de que el rol sea dev
+  t.true(createdUser.admin, 'debe ser admin')
 
   // se debe crear una contribución
   let newContrib = fixtures.getContrib()
@@ -214,18 +245,67 @@ test('add dev response', async t => {
 
   // se debe valorar la contribucion por el dev
   let response = await db.devRes(contribId, createdUser, devMessage)
+  t.is(response.message, devMessage.message, 'message shoud be the same')
+  t.deepEqual(response.status, 200, 'status shoud be 200')
 
   // se debe evitar que un user normal modifique el devResponse
-  t.deepEqual(response.status, 200, 'devuelve un estado 200')
-  t.is(response.message, devMessage.message, 'Message should be the same')
+  let userNormal = fixtures.getUser()
+  let createdNormalUser = await db.createUser(userNormal)
+  t.false(createdNormalUser.admin, 'User not should be admin')
+
+  // la repsuesta debe ser un error de auth
+  let fakeResponse = await t.throws(db.devRes(contribId, createdNormalUser, devMessage))
+  console.log(fakeResponse.message)
+  t.regex(fakeResponse.message, /not authorized/, 'Message should be an error')
 })
 
-test.todo('active a evaluate mode for a contribution')
-
 // contributions edit methods
+test('rate contribution', async t => {
+  let db = t.context.db
+  t.is(typeof db.rateContrib, 'function', 'rateContrib should be exist')
+
+  // Crear un usuario para crear una contribucio
+  let newUser = fixtures.getUser()
+  let createdUser = await db.createUser(newUser)
+  let userName = createdUser.username
+
+  let newUser2 = fixtures.getUser()
+  let createdUser2 = await db.createUser(newUser2)
+  let userName2 = createdUser2.username
+
+  // se crea una contribucion
+  let newContrib = fixtures.getContrib()
+  let createdContrib = await db.createContrib(newContrib, userName)
+  let contribId = createdContrib.publicId
+
+  // se debe puntear la contribución
+  let response = await db.rateContrib(contribId, userName)
+  let puntaje = response.rate
+
+  t.is(response.status, 200, 'debe llegar un estatus ok')
+  t.is(puntaje, 1, 'Debe llegar la cantidad total del puntaje')
+
+  // se debe sumar la puntuación
+  response = await db.rateContrib(contribId, userName2)
+  t.is(response.status, 200, 'debe llegar un estatus ok')
+  t.deepEqual(response.rate, 2, 'Debe llegar la cantidad total del puntaje')
+  console.log(response)
+
+  // se debe puntear la contribucion de nuevo y recibir una respuesta de reduccion del contador
+  let response1 = await db.rateContrib(contribId, userName)
+  t.is(response1.status, 200, 'debe llegar un estatus ok')
+  t.deepEqual(response1.rate, puntaje, 'Debe llegar la cantidad total del puntaje, que reduce en uno')
+
+  // se debe recibir un error si la contribucion no existe
+  let response2 = await t.throws(db.rateContrib(2312314, userName))
+  t.regex(response2.message, /contrib not found/, 'usuario invalido')
+
+  // de debe recibir un error si el usuario no existe
+  let response3 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username))
+  t.regex(response3.message, /not found/, 'usuario invalido')
+})
+
 test.todo('modify a contribution')
-test.todo('rate contribution')
-test.todo('add a message to a contribution')
 
 // utils
 test.todo('get last ten contributions')

@@ -24,7 +24,8 @@
   },
   "scripts": {
     "lint": "standard",
-    "test": "npm run lint && ava test/**-test.js"
+    "test": "npm run lint && ava test/**-test.js",
+    "var": "bash config.sh"
   },
   "repository": {
     "type": "git",

@@ -186,15 +186,40 @@ test('delete a contribution', async t => {
 
 // dev methods
 test.todo('create dev user')
-test.skip('add dev response', async t => {
+
+test('add dev response', async t => {
   let db = t.context.db
   t.is(typeof db.devRes, 'function', 'devResponse should exist')
+
   // se debe crear un usario
+  let newUser = fixtures.getUser()
+  let createdUser = await db.createUser(newUser)
+  let userName = createdUser.username
+
   // se debe darle el titulo de developer
+  // tener en cuenta la forma como se va a gestionar la seguridad
+  // del dev user
+
+  let createNewDev = await db.devCreate(createdUser)
+  t.is(createNewDev.status, 200, 'ok:ok')
+  t.is(createNewDev.user.publicId, createdUser.publicId, 'shoud be the same publicid')
+
   // se debe crear una contribución
+  let newContrib = fixtures.getContrib()
+  let createdContrib = await db.createContrib(newContrib, userName)
+  let contribId = createdContrib.publicId
+
+  // se crea un dev message
+  let devMessage = fixtures.getDevData()
+
   // se debe valorar la contribucion por el dev
+  let response = await db.devRes(contribId, createdUser, devMessage)
+
   // se debe evitar que un user normal modifique el devResponse
+  t.deepEqual(response.status, 200, 'devuelve un estado 200')
+  t.is(response.message, devMessage.message, 'Message should be the same')
 })
+
 test.todo('active a evaluate mode for a contribution')
 
 // contributions edit methods

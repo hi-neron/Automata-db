@@ -305,7 +305,43 @@ test('rate contribution', async t => {
   t.regex(response3.message, /not found/, 'usuario invalido')
 })
 
-test.todo('modify a contribution')
+test('modify a contribution', async t => {
+  let db = t.context.db
+  t.is(typeof db.editContrib, 'function', 'editContrib should be exist')
+
+  // Crear un usuario para crear una contribucion
+  let newUser = fixtures.getUser()
+  let createdUser = await db.createUser(newUser)
+  let userName = createdUser.username
+
+  // se crea una contribucion
+  let newContrib = fixtures.getContrib()
+  let createdContrib = await db.createContrib(newContrib, userName)
+  let contribId = createdContrib.publicId
+
+  let changes = {
+    type: 'feature',
+    info: 'this data going to change',
+    image: 'http://anyoneimage.png'
+  }
+
+  // se debe editar una contribucion
+  let response = await db.editContrib(contribId, username, changes)
+
+  // los cambios deben incluir cualquiera de los datos necesarios
+  // type, info or image. esa data se remplaza por la original
+  t.is()
+
+  // se debe recibir un error si la contribucion no existe
+  let response2 = await t.throws(db.rateContrib(2312314, userName))
+  t.regex(response2.message, /contrib not found/, 'usuario invalido')
+
+  // de debe recibir un error si el usuario no existe
+  let response3 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username))
+  t.regex(response3.message, /not found/, 'usuario invalido')
+})
+
+test.todo('add crontib message')
 
 // utils
 test.todo('get last ten contributions')

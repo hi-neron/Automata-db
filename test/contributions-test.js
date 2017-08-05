@@ -191,74 +191,6 @@ test('delete a contribution', async t => {
   t.regex(delResponseErr.message, /aprovated can't be deleted/, 'Contributions aproved can\'t be deleted')
 })
 
-// dev methods
-test('create dev user', async t => {
-  let db = t.context.db
-  t.is(typeof db.deleteContrib, 'function', 'createContrib should be')
-
-  // debe crearse un usuario para evaluar, el usuario debe ser el admin
-  let user = fixtures.getUser()
-  user.username = 'pepe'
-  let createdUser = await db.createUser(user)
-
-  // let username = createdUser.username
-  t.is(createdUser.admin, true, 'must be administrator')
-
-  // se asegura de que ningun otro usuario sea dev
-  let userNoAdmin = fixtures.getUser()
-  user.username = 'michael'
-  let createdUserNoA = await db.createUser(userNoAdmin)
-
-  // let username = createdUser.username
-  t.is(createdUserNoA.admin, false, 'must be administrator')
-})
-
-test('add dev response', async t => {
-  let db = t.context.db
-  t.is(typeof db.devRes, 'function', 'devResponse should exist')
-
-  // se debe crear un usario
-  let newUser = fixtures.getUser()
-
-  // se debe darle el titulo de developer.
-
-  // la forma como se gestiona al usuario *dev* es:
-  // solo se puede asignar a un usuario el rol de dev desde la creacion del usuario, nunca despues
-  // Se busca en una variable de entorno, que contiene los nombres de los nuevos devs
-  // si el nombre coincide con el nuevo usuario, este tendra ese rol.
-
-  // en este caso pepe, esta en la lista de devs users
-  newUser.username = 'pepe'
-  let createdUser = await db.createUser(newUser)
-  let userName = createdUser.username
-
-  // Se asegura de que el rol sea dev
-  t.true(createdUser.admin, 'debe ser admin')
-
-  // se debe crear una contribución
-  let newContrib = fixtures.getContrib()
-  let createdContrib = await db.createContrib(newContrib, userName)
-  let contribId = createdContrib.publicId
-
-  // se crea un dev message
-  let devMessage = fixtures.getDevData()
-
-  // se debe valorar la contribucion por el dev
-  let response = await db.devRes(contribId, createdUser, devMessage)
-  t.is(response.message, devMessage.message, 'message shoud be the same')
-  t.deepEqual(response.status, 200, 'status shoud be 200')
-
-  // se debe evitar que un user normal modifique el devResponse
-  let userNormal = fixtures.getUser()
-  let createdNormalUser = await db.createUser(userNormal)
-  t.false(createdNormalUser.admin, 'User not should be admin')
-
-  // la repsuesta debe ser un error de auth
-  let fakeResponse = await t.throws(db.devRes(contribId, createdNormalUser, devMessage))
-  console.log(fakeResponse.message)
-  t.regex(fakeResponse.message, /not authorized/, 'Message should be an error')
-})
-
 // contributions edit methods
 test('rate contribution', async t => {
   let db = t.context.db
@@ -331,7 +263,8 @@ test('modify a contribution', async t => {
   // los cambios deben incluir cualquiera de los datos necesarios
   // type, info or image. esa data se remplaza por la original
   t.is(response.status, 200, 'Status 200')
-  t.is(response.changes, changes, 'changes should be made')
+  t.deepEqual(response.changes, changes, 'changes should be made')
+  console.log(response)
 
   // se debe recibir un error si la contribucion no existe
   let response2 = await t.throws(db.rateContrib(2312314, userName, changes))
@@ -344,10 +277,117 @@ test('modify a contribution', async t => {
   // de debe recibir un error si la data no cumple al menos un requisito
   let badChanges = {}
   let response4 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username, badChanges))
-  t.regex(response4.message, /invalid/, 'usuario invalido')
+  t.regex(response4.message, /not found/, 'usuario invalido')
 })
 
-test.todo('add crontib message')
+// dev methods
+test('create dev user', async t => {
+  let db = t.context.db
+  t.is(typeof db.deleteContrib, 'function', 'createContrib should be')
 
-// utils
+  // debe crearse un usuario para evaluar, el usuario debe ser el admin
+  let user = fixtures.getUser()
+  user.username = 'pepe'
+  let createdUser = await db.createUser(user)
+
+  // let username = createdUser.username
+  t.is(createdUser.admin, true, 'must be administrator')
+
+  // se asegura de que ningun otro usuario sea dev
+  let userNoAdmin = fixtures.getUser()
+  user.username = 'michael'
+  let createdUserNoA = await db.createUser(userNoAdmin)
+
+  // let username = createdUser.username
+  t.is(createdUserNoA.admin, false, 'must be administrator')
+})
+
+test('add dev response', async t => {
+  let db = t.context.db
+  t.is(typeof db.devRes, 'function', 'devResponse should exist')
+
+  // se debe crear un usario
+  let newUser = fixtures.getUser()
+
+  // se debe darle el titulo de developer.
+
+  // la forma como se gestiona al usuario *dev* es:
+  // solo se puede asignar a un usuario el rol de dev desde la creacion del usuario, nunca despues
+  // Se busca en una variable de entorno, que contiene los nombres de los nuevos devs
+  // si el nombre coincide con el nuevo usuario, este tendra ese rol.
+
+  // en este caso pepe, esta en la lista de devs users
+  newUser.username = 'pepe'
+  let createdUser = await db.createUser(newUser)
+  let userName = createdUser.username
+
+  // Se asegura de que el rol sea dev
+  t.true(createdUser.admin, 'debe ser admin')
+
+  // se debe crear una contribución
+  let newContrib = fixtures.getContrib()
+  let createdContrib = await db.createContrib(newContrib, userName)
+  let contribId = createdContrib.publicId
+
+  // se crea un dev message
+  let devMessage = fixtures.getDevData()
+
+  // se debe valorar la contribucion por el dev
+  let response = await db.devRes(contribId, createdUser, devMessage)
+  t.is(response.message, devMessage.message, 'message shoud be the same')
+  t.deepEqual(response.status, 200, 'status shoud be 200')
+
+  // se debe evitar que un user normal modifique el devResponse
+  let userNormal = fixtures.getUser()
+  let createdNormalUser = await db.createUser(userNormal)
+  t.false(createdNormalUser.admin, 'User not should be admin')
+
+  // la repsuesta debe ser un error de auth
+  let fakeResponse = await t.throws(db.devRes(contribId, createdNormalUser, devMessage))
+  console.log(fakeResponse.message)
+  t.regex(fakeResponse.message, /not authorized/, 'Message should be an error')
+})
+
+// contributions messages
+test('add crontib message', async t => {
+  // la funcion agregar un mensaje debe existir
+  let db = t.context.db
+  t.is(typeof db.addContribMessage, 'function', 'addContribMessage should be exist')
+
+  // primero se crea un usuario, para crear la contribucion
+  let newUser = fixtures.getUser()
+  let createdUser = await db.createUser(newUser)
+  let userName = createdUser.username
+
+  // se crea una contribucion
+  let newContrib = fixtures.getContrib()
+  let createdContrib = await db.createContrib(newContrib, userName)
+  let contribId = createdContrib.publicId
+
+  // se crea un mensaje
+  let message = 'this is my message'
+
+  // se anexa un mensaje a la contribucion
+  let response = await db.addContribMessage(contribId, userName, message)
+  t.is(response.message, message, 'should be the same message')
+  t.true(response.date, 'should be have a date')
+  t.true(response.id, 'should be have an id')
+  t.true(response.place, 'should be have a place')
+
+  // // se debe recibir un error si la contribucion no existe
+  // let response2 = await t.throws(db.rateContrib(2312314, userName, changes))
+  // t.regex(response2.message, /contrib not found/, 'usuario invalido')
+
+  // // de debe recibir un error si el usuario no existe
+  // let response3 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username, changes))
+  // t.regex(response3.message, /not found/, 'usuario invalido')
+})
+
+test('Del crontib message', async t => {
+  // la funcion eliminar un mensaje debe existir
+  let db = t.context.db
+  t.is(typeof db.editContrib, 'function', 'delContribMessage should be exist')
+})
+
+// contributios utils
 test.todo('get last ten contributions')

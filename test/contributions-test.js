@@ -326,19 +326,25 @@ test('modify a contribution', async t => {
   }
 
   // se debe editar una contribucion
-  let response = await db.editContrib(contribId, username, changes)
+  let response = await db.editContrib(contribId, userName, changes)
 
   // los cambios deben incluir cualquiera de los datos necesarios
   // type, info or image. esa data se remplaza por la original
-  t.is()
+  t.is(response.status, 200, 'Status 200')
+  t.is(response.changes, changes, 'changes should be made')
 
   // se debe recibir un error si la contribucion no existe
-  let response2 = await t.throws(db.rateContrib(2312314, userName))
+  let response2 = await t.throws(db.rateContrib(2312314, userName, changes))
   t.regex(response2.message, /contrib not found/, 'usuario invalido')
 
   // de debe recibir un error si el usuario no existe
-  let response3 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username))
+  let response3 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username, changes))
   t.regex(response3.message, /not found/, 'usuario invalido')
+
+  // de debe recibir un error si la data no cumple al menos un requisito
+  let badChanges = {}
+  let response4 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username, badChanges))
+  t.regex(response4.message, /invalid/, 'usuario invalido')
 })
 
 test.todo('add crontib message')

@@ -367,10 +367,13 @@ test('add crontib message', async t => {
   // se anexa un mensaje a la contribucion
   let response = await db.addContribMessage(contribId, userName, message)
   t.is(response.info, message, 'should be the same message')
-  t.is(response.status, 200, 'should be the same message')
+  t.is(response.status, 200, 'status 200')
   t.true(response.date instanceof Date, 'It should have a date')
   t.is(typeof response.id, 'string', 'should be have an id')
   t.is(typeof response.user, 'object', 'should be have a place')
+
+  response = await db.addContribMessage(contribId, userName, message)
+  t.is(response.status, 200, 'status 200')
 
   // se debe recibir un error si la contribucion no existe
   let response2 = await t.throws(db.addContribMessage(2312314, userName, message))
@@ -384,8 +387,79 @@ test('add crontib message', async t => {
 test('Del crontib message', async t => {
   // la funcion eliminar un mensaje debe existir
   let db = t.context.db
-  t.is(typeof db.editContrib, 'function', 'delContribMessage should be exist')
+  t.is(typeof db.delContribMessage, 'function', 'delContribMessage should be exist')
+
+  // primero se crea un usuario, agregar un mensjae, y eleminarlo
+  let newUser = fixtures.getUser()
+  let createdUser = await db.createUser(newUser)
+  let userName = createdUser.username
+
+  let newUser2 = fixtures.getUser()
+  let createdUser2 = await db.createUser(newUser2)
+  let userName2 = createdUser2.username
+
+  // se crea una contribucion
+  let newContrib = fixtures.getContrib()
+  let createdContrib = await db.createContrib(newContrib, userName)
+  let contribId = createdContrib.publicId
+
+  // se crea un mensaje
+  let message = 'primer mensaje'
+  let message1 = 'segundo mensaje'
+  let message2 = 'tercer mensaje'
+
+  // se anexa un mensaje a la contribucion
+  await db.addContribMessage(contribId, userName, message1)
+  await db.addContribMessage(contribId, userName, message2)
+  let response = await db.addContribMessage(contribId, userName, message)
+  t.is(response.info, message, 'should be the same message')
+  t.is(response.status, 200, 'status 200')
+
+  let messageId = response.id
+  let badId = '123'
+
+  // se debe recibir un error si el usuario y el mensaje no coinciden
+  let delResponse2 = await t.throws(db.delContribMessage(contribId, userName2, messageId))
+  t.regex(delResponse2.message, /Unauthorized/, 'el usuario no   coincide')
+
+  // se debe recibir un error si el id del mensaje no se encuentra
+  let delResponse3 = await t.throws(db.delContribMessage(contribId, userName, badId))
+  t.regex(delResponse3.message, /not found/, 'status 400')
+
+  // se debe recibir un error si la contribucion no existe
+  let response4 = await t.throws(db.addContribMessage(2312314, userName, message))
+  t.regex(response4.message, /contrib not found/, 'usuario invalido')
+
+  // de debe recibir un error si el usuario no existe
+  let response5 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username, message))
+  t.regex(response5.message, /not found/, 'usuario invalido')
+
+  // se elimina el mensaje en la contribucion
+  let delResponse = await db.delContribMessage(contribId, userName, messageId)
+  console.log(delResponse)
+  t.is(delResponse.status, 200, 'status 200')
+  t.is(delResponse.id, response.id, 'should be have an id')
 })
 
-// contributios utils
-test.todo('get last ten contributions')
+// contributions utils
+test('get last ten contributions', async t => {
+  let db = t.context.db
+  t.is(typeof db.getTenContribs, 'function', 'Function get ten contributions should exist')
+
+  // debe crearse un usuario para crear nuna contribucion
+  let user = fixtures.getUser()
+  let createdUser = await db.createUser(user)
+  let username = createdUser.username
+
+  // deben crearse 10 contribuciones
+  let contrib
+  for (let i = 0; i < 13; i++) {
+    contrib = fixtures.getContrib()
+    await db.createContrib(contrib, username)
+  }
+
+  // deben obtenerse 10 contribuciones
+  let response = await db.getTenContribs()
+  t.is(response.status, 200, 'status should be 200')
+  t.true(response.contributions.length === 10, 'Response should have ten contributions')
+})

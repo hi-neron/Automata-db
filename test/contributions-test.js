@@ -221,7 +221,6 @@ test('rate contribution', async t => {
   response = await db.rateContrib(contribId, userName2)
   t.is(response.status, 200, 'debe llegar un estatus ok')
   t.deepEqual(response.rate, 2, 'Debe llegar la cantidad total del puntaje')
-  console.log(response)
 
   // se debe puntear la contribucion de nuevo y recibir una respuesta de reduccion del contador
   let response1 = await db.rateContrib(contribId, userName)
@@ -264,7 +263,6 @@ test('modify a contribution', async t => {
   // type, info or image. esa data se remplaza por la original
   t.is(response.status, 200, 'Status 200')
   t.deepEqual(response.changes, changes, 'changes should be made')
-  console.log(response)
 
   // se debe recibir un error si la contribucion no existe
   let response2 = await t.throws(db.rateContrib(2312314, userName, changes))
@@ -344,7 +342,6 @@ test('add dev response', async t => {
 
   // la repsuesta debe ser un error de auth
   let fakeResponse = await t.throws(db.devRes(contribId, createdNormalUser, devMessage))
-  console.log(fakeResponse.message)
   t.regex(fakeResponse.message, /not authorized/, 'Message should be an error')
 })
 
@@ -369,18 +366,19 @@ test('add crontib message', async t => {
 
   // se anexa un mensaje a la contribucion
   let response = await db.addContribMessage(contribId, userName, message)
-  t.is(response.message, message, 'should be the same message')
-  t.true(response.date, 'should be have a date')
-  t.true(response.id, 'should be have an id')
-  t.true(response.place, 'should be have a place')
+  t.is(response.info, message, 'should be the same message')
+  t.is(response.status, 200, 'should be the same message')
+  t.true(response.date instanceof Date, 'It should have a date')
+  t.is(typeof response.id, 'string', 'should be have an id')
+  t.is(typeof response.user, 'object', 'should be have a place')
 
-  // // se debe recibir un error si la contribucion no existe
-  // let response2 = await t.throws(db.rateContrib(2312314, userName, changes))
-  // t.regex(response2.message, /contrib not found/, 'usuario invalido')
+  // se debe recibir un error si la contribucion no existe
+  let response2 = await t.throws(db.addContribMessage(2312314, userName, message))
+  t.regex(response2.message, /contrib not found/, 'usuario invalido')
 
-  // // de debe recibir un error si el usuario no existe
-  // let response3 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username, changes))
-  // t.regex(response3.message, /not found/, 'usuario invalido')
+  // de debe recibir un error si el usuario no existe
+  let response3 = await t.throws(db.rateContrib(contribId, fixtures.getUser().username, message))
+  t.regex(response3.message, /not found/, 'usuario invalido')
 })
 
 test('Del crontib message', async t => {

@@ -31,12 +31,15 @@ test('edit masteries', async t => {
   let db = t.context.db
   t.is(typeof db.editMasteries, 'function', 'editMastery should be')
 
+  // se dan algunas maestrias
   let mastery = ['Photography', 'Drawing']
 
+  // se crea un usuario
   let gettingUser = fixtures.getUser()
   let user = await db.createUser(gettingUser)
-  let result = await db.editMasteries(gettingUser.username, mastery)
 
+  // se editan sus maestrias
+  let result = await db.editMasteries(gettingUser.username, mastery)
   t.is(result.username, user.username, 'should be the same username')
   t.deepEqual(result.masteries.map(utils.capitalize), mastery, 'should have a masteries')
 
@@ -44,11 +47,13 @@ test('edit masteries', async t => {
   t.throws(db.editMasteries(dude, mastery), /not found/)
 
   let masteries2 = ['drawing', 'Photography', 'writing', 'motion']
-  let resultTwo = await db.editMasteries(gettingUser.username, masteries2)
 
+  // Solo debe permitir agregar tres maestrias que esten en lista
+  let resultTwo = await db.editMasteries(gettingUser.username, masteries2)
   t.is(resultTwo.username, user.username, 'should be the same username')
   t.deepEqual(resultTwo.masteries.length, 3, 'should have three items')
 
+  // Solo se pueden anexar maestrias reconocidas
   masteries2 = ['nada', 'enAbsoluto']
   let resultthree = await t.throws(db.editMasteries(gettingUser.username, masteries2))
   t.is(resultthree.message, 'Mastery not found')

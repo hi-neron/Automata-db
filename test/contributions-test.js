@@ -27,7 +27,7 @@ test.afterEach.always('Clean up', async t => {
   await r.dbDrop(dbName).run(conn)
 })
 
-test('get tags from message', t => {
+test.skip('get tags from message', t => {
   t.is(typeof utils.getTags, 'function', 'editMastery should be')
   let contrib = fixtures.getContrib()
   let tags = utils.getTags(contrib.data.info)
@@ -44,7 +44,7 @@ test('get tags from message', t => {
 })
 
 // contributions methods
-test('Get a contrib', async t => {
+test.skip('Get a contrib', async t => {
   let db = t.context.db
   t.is(typeof db.getContrib, 'function', 'createContrib should be')
 
@@ -69,7 +69,7 @@ test('Get a contrib', async t => {
   t.is(receivedContrib2.message, `contrib not found`)
 })
 
-test('create a contribution', async t => {
+test.skip('create a contribution', async t => {
   let db = t.context.db
   t.is(typeof db.createContrib, 'function', 'createContrib should be')
   /*
@@ -133,7 +133,7 @@ test('create a contribution', async t => {
   t.deepEqual(resultTwo.message, 'Invalid contribution')
 })
 
-test('delete a contribution', async t => {
+test.skip('delete a contribution', async t => {
   let db = t.context.db
   t.is(typeof db.deleteContrib, 'function', 'createContrib should be')
 
@@ -192,7 +192,7 @@ test('delete a contribution', async t => {
 })
 
 // contributions edit methods
-test('rate contribution', async t => {
+test.skip('rate contribution', async t => {
   let db = t.context.db
   t.is(typeof db.rateContrib, 'function', 'rateContrib should be exist')
 
@@ -236,7 +236,7 @@ test('rate contribution', async t => {
   t.regex(response3.message, /not found/, 'usuario invalido')
 })
 
-test('modify a contribution', async t => {
+test.skip('modify a contribution', async t => {
   let db = t.context.db
   t.is(typeof db.editContrib, 'function', 'editContrib should be exist')
 
@@ -279,7 +279,7 @@ test('modify a contribution', async t => {
 })
 
 // dev methods
-test('create dev user', async t => {
+test.skip('create dev user', async t => {
   let db = t.context.db
   t.is(typeof db.deleteContrib, 'function', 'createContrib should be')
 
@@ -300,7 +300,7 @@ test('create dev user', async t => {
   t.is(createdUserNoA.admin, false, 'must be administrator')
 })
 
-test('add dev response', async t => {
+test.skip('add dev response', async t => {
   let db = t.context.db
   t.is(typeof db.devRes, 'function', 'devResponse should exist')
 
@@ -346,7 +346,7 @@ test('add dev response', async t => {
 })
 
 // contributions messages
-test('add crontib message', async t => {
+test.skip('add crontib message', async t => {
   // la funcion agregar un mensaje debe existir
   let db = t.context.db
   t.is(typeof db.addContribMessage, 'function', 'addContribMessage should be exist')
@@ -384,7 +384,7 @@ test('add crontib message', async t => {
   t.regex(response3.message, /not found/, 'usuario invalido')
 })
 
-test('Del crontib message', async t => {
+test.skip('Del crontib message', async t => {
   // la funcion eliminar un mensaje debe existir
   let db = t.context.db
   t.is(typeof db.delContribMessage, 'function', 'delContribMessage should be exist')
@@ -441,8 +441,131 @@ test('Del crontib message', async t => {
   t.is(delResponse.id, response.id, 'should be have an id')
 })
 
+test('add man of the month', async t => {
+  let db = t.context.db
+  t.is(typeof db.setManOfMonth, 'function', 'addMom should exist')
+
+  // se debe crear un usario
+  let newUser = fixtures.getUser()
+  // se debe darle el titulo de developer.
+  newUser.username = 'pepe' // pepe esta en la lista de usuarios admin
+  let createdUser = await db.createUser(newUser)
+  let userName = createdUser.username
+
+  // Se asegura de que el rol sea dev
+  t.true(createdUser.admin, 'debe ser admin')
+
+  // se crea un usuario, sera el mom
+  let momUser = fixtures.getUser()
+  let mom = await db.createUser(momUser)
+
+  // se debe valorar la contribucion por el dev
+  let response = await db.setManOfMonth(userName, mom.username)
+  t.is(response.username, mom.username, 'user should be the same')
+  console.log(response)
+
+  // se debe evitar que un user normal modifique el mom
+  let userNormal = fixtures.getUser()
+  let createdNormalUser = await db.createUser(userNormal)
+  t.false(createdNormalUser.admin, 'User not should be admin')
+
+  // la repsuesta debe ser un error de auth
+  let fakeResponse = await t.throws(db.setManOfMonth(createdNormalUser.username, mom.username))
+  t.regex(fakeResponse.message, /not authorized/, 'Message should be an error')
+})
+
+test.skip('get contrib by tag', async t => {
+  let db = t.context.db
+  t.is(typeof db.devRes, 'function', 'devResponse should exist')
+
+  // se debe crear un usario
+  let newUser = fixtures.getUser()
+
+  // se debe darle el titulo de developer.
+
+  // la forma como se gestiona al usuario *dev* es:
+  // solo se puede asignar a un usuario el rol de dev desde la creacion del usuario, nunca despues
+  // Se busca en una variable de entorno, que contiene los nombres de los nuevos devs
+  // si el nombre coincide con el nuevo usuario, este tendra ese rol.
+
+  // en este caso pepe, esta en la lista de devs users
+  newUser.username = 'pepe'
+  let createdUser = await db.createUser(newUser)
+  let userName = createdUser.username
+
+  // Se asegura de que el rol sea dev
+  t.true(createdUser.admin, 'debe ser admin')
+
+  // se debe crear una contribución
+  let newContrib = fixtures.getContrib()
+  let createdContrib = await db.createContrib(newContrib, userName)
+  let contribId = createdContrib.publicId
+
+  // se crea un dev message
+  let devMessage = fixtures.getDevData()
+
+  // se debe valorar la contribucion por el dev
+  let response = await db.devRes(contribId, createdUser, devMessage)
+  t.is(response.message, devMessage.message, 'message shoud be the same')
+  t.deepEqual(response.status, 200, 'status shoud be 200')
+
+  // se debe evitar que un user normal modifique el devResponse
+  let userNormal = fixtures.getUser()
+  let createdNormalUser = await db.createUser(userNormal)
+  t.false(createdNormalUser.admin, 'User not should be admin')
+
+  // la repsuesta debe ser un error de auth
+  let fakeResponse = await t.throws(db.devRes(contribId, createdNormalUser, devMessage))
+  t.regex(fakeResponse.message, /not authorized/, 'Message should be an error')
+})
+
+test.skip('add contrib on process', async t => {
+  let db = t.context.db
+  t.is(typeof db.devRes, 'function', 'devResponse should exist')
+
+  // se debe crear un usario
+  let newUser = fixtures.getUser()
+
+  // se debe darle el titulo de developer.
+
+  // la forma como se gestiona al usuario *dev* es:
+  // solo se puede asignar a un usuario el rol de dev desde la creacion del usuario, nunca despues
+  // Se busca en una variable de entorno, que contiene los nombres de los nuevos devs
+  // si el nombre coincide con el nuevo usuario, este tendra ese rol.
+
+  // en este caso pepe, esta en la lista de devs users
+  newUser.username = 'pepe'
+  let createdUser = await db.createUser(newUser)
+  let userName = createdUser.username
+
+  // Se asegura de que el rol sea dev
+  t.true(createdUser.admin, 'debe ser admin')
+
+  // se debe crear una contribución
+  let newContrib = fixtures.getContrib()
+  let createdContrib = await db.createContrib(newContrib, userName)
+  let contribId = createdContrib.publicId
+
+  // se crea un dev message
+  let devMessage = fixtures.getDevData()
+
+  // se debe valorar la contribucion por el dev
+  let response = await db.devRes(contribId, createdUser, devMessage)
+  t.is(response.message, devMessage.message, 'message shoud be the same')
+  t.deepEqual(response.status, 200, 'status shoud be 200')
+
+  // se debe evitar que un user normal modifique el devResponse
+  let userNormal = fixtures.getUser()
+  let createdNormalUser = await db.createUser(userNormal)
+  t.false(createdNormalUser.admin, 'User not should be admin')
+
+  // la repsuesta debe ser un error de auth
+  let fakeResponse = await t.throws(db.devRes(contribId, createdNormalUser, devMessage))
+  t.regex(fakeResponse.message, /not authorized/, 'Message should be an error')
+})
+
 // contributions utils
-test('get last ten contributions', async t => {
+test.skip('get last ten contributions', async t => {
   let db = t.context.db
   t.is(typeof db.getTenContribs, 'function', 'Function get ten contributions should exist')
 

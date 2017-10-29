@@ -459,7 +459,7 @@ test('add man of the month', async t => {
   let momUser = fixtures.getUser()
   let mom = await db.createUser(momUser)
 
-  // se debe valorar la contribucion por el dev
+  // se enviar el nombre del mom
   let response = await db.setManOfMonth(userName, mom.username)
   t.is(response.username, mom.username, 'user should be the same')
   console.log(response)
@@ -469,54 +469,75 @@ test('add man of the month', async t => {
   let createdNormalUser = await db.createUser(userNormal)
   t.false(createdNormalUser.admin, 'User not should be admin')
 
-  // la repsuesta debe ser un error de auth
+  // la respuesta debe ser un error de auth
   let fakeResponse = await t.throws(db.setManOfMonth(createdNormalUser.username, mom.username))
   t.regex(fakeResponse.message, /not authorized/, 'Message should be an error')
 })
 
+test('get man of the month', async t => {
+  let db = t.context.db
+  t.is(typeof db.getManOfMonth, 'function', 'createContrib should be')
+
+  let noMomResponse = await db.getManOfMonth()
+  t.is(noMomResponse.username, 'Lucifer')
+
+  // debe crearse un usuario para asignarle el mom
+  let newUser = fixtures.getUser()
+
+  // se debe darle el titulo de developer.
+  newUser.username = 'pepe' // pepe esta en la lista de usuarios admin
+  let createdUser = await db.createUser(newUser)
+  let userAdminName = createdUser.username
+
+  // debe crearse el mom
+  let momUser = fixtures.getUser()
+  // se crea un usuario, sera el mom
+  let mom = await db.createUser(momUser)
+
+  // se crea el mom en la bd
+  let response = await db.setManOfMonth(userAdminName, mom.username)
+  console.log(response, '-- created')
+  t.is(response.username, mom.username, 'user should be the same')
+
+  // se busca el ultimo mom
+  let momCreated = await db.getManOfMonth()
+  console.log(momCreated)
+  t.is(momCreated.username, mom.username, 'user should be the same was nous envie')
+})
+
 test.skip('get contrib by tag', async t => {
   let db = t.context.db
-  t.is(typeof db.devRes, 'function', 'devResponse should exist')
+  t.is(typeof db.getContribsByTag, 'function', 'devResponse should exist')
 
   // se debe crear un usario
   let newUser = fixtures.getUser()
 
-  // se debe darle el titulo de developer.
-
-  // la forma como se gestiona al usuario *dev* es:
-  // solo se puede asignar a un usuario el rol de dev desde la creacion del usuario, nunca despues
-  // Se busca en una variable de entorno, que contiene los nombres de los nuevos devs
-  // si el nombre coincide con el nuevo usuario, este tendra ese rol.
+  let tag = '#perro'
+  let tag2 = '#emerson'
 
   // en este caso pepe, esta en la lista de devs users
-  newUser.username = 'pepe'
   let createdUser = await db.createUser(newUser)
   let userName = createdUser.username
 
-  // Se asegura de que el rol sea dev
-  t.true(createdUser.admin, 'debe ser admin')
-
   // se debe crear una contribución
   let newContrib = fixtures.getContrib()
-  let createdContrib = await db.createContrib(newContrib, userName)
-  let contribId = createdContrib.publicId
+  let newContrib2 = fixtures.getContrib()
+  let newContrib3 = fixtures.getContrib()
+  newContrib2.info = 'este es otro #perro guia'
+  newContrib3.info = 'este es otro amor de perro'
 
-  // se crea un dev message
-  let devMessage = fixtures.getDevData()
+  await db.createContrib(newContrib2, userName)
+  await db.createContrib(newContrib, userName)
+  await db.createContrib(newContrib3, userName)
 
-  // se debe valorar la contribucion por el dev
-  let response = await db.devRes(contribId, createdUser, devMessage)
-  t.is(response.message, devMessage.message, 'message shoud be the same')
-  t.deepEqual(response.status, 200, 'status shoud be 200')
+  // se debe buscar la publciacion por tag
+  let response = await db.getContribsByTag(tag)
+  console.log(response)
+  t.is(response.length, 2, 'debe devolver un solo item')
 
-  // se debe evitar que un user normal modifique el devResponse
-  let userNormal = fixtures.getUser()
-  let createdNormalUser = await db.createUser(userNormal)
-  t.false(createdNormalUser.admin, 'User not should be admin')
-
-  // la repsuesta debe ser un error de auth
-  let fakeResponse = await t.throws(db.devRes(contribId, createdNormalUser, devMessage))
-  t.regex(fakeResponse.message, /not authorized/, 'Message should be an error')
+  // no debe encontrar nada
+  let response2 = await db.getContribsByTag(tag2)
+  t.is(response2.length, 0, 'debe devolver un solo item')
 })
 
 test.skip('add contrib on process', async t => {

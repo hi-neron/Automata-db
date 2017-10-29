@@ -50,11 +50,8 @@ module.exports = {
   getContrib () {
     return {
       title: 'Esto es un titulo',
-      data: {
-        type: 'feature',
-        info: 'esto podria ser una gran ideacon varios tags en camino #hagamos el #Amor',
-        image: 'http://aquiUnaMuestra.jpg'
-      }
+      tags: ['#perro', '#unico'],
+      info: 'cette es un message #perro, #unico'
     }
   },
   getContribMessage () {
